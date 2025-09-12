@@ -1,28 +1,22 @@
 impl Solution {
     pub fn is_valid(s: String) -> bool {
-        let s: Vec<char> = s.chars().into_iter().collect();
-        let open = vec!['(', '{', '['];
-        let close = vec![')', '}', ']'];
-        let mut val = Vec::new();
-        for i in 0..s.len() {
-            if open.contains(&s[i]) {
-                val.push(s[i]);
-            } else if let Some(index) = close.iter().position(|&x| x == s[i]) {
-                if val.len() == 0 {
-                    return false;
-                }
-                if val.pop().unwrap() == open[index] {
-                    continue;
-                } else {
-                    return false;
+        let open = ['(', '{', '['];
+        let close = [')', '}', ']'];
+
+        s.chars().try_fold(Vec::new(), |mut stack, c| {
+            if let Some(idx) = open.iter().position(|&o| o == c) {
+                stack.push(open[idx]);
+                Some(stack)
+            } else if let Some(idx) = close.iter().position(|&cl| cl == c) {
+                match stack.pop() {
+                    Some(top) if top == open[idx] => Some(stack),
+                    _ => None, // invalid closing
                 }
             } else {
-                return false;
+                None // invalid char
             }
-        }
-        if val.len() == 0 {
-            return true;
-        }
-        false
+        })
+        .map(|stack| stack.is_empty())
+        .unwrap_or(false)
     }
 }
